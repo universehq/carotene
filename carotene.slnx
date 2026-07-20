@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/DequeBenchmark/DequeBenchmark.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Carotene.Collections/Universe.Carotene.Collections.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Collections.UnitTests/Collections.UnitTests.csproj" />
+  </Folder>
+</Solution>
