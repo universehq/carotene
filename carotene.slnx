@@ -4,8 +4,13 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Carotene.Collections/Universe.Carotene.Collections.csproj" />
+    <Project Path="src/Carotene.Union/Universe.Carotene.Union.csproj" />
+  </Folder>
+  <Folder Name="/src/Carotene.Union.SourceGenerator/">
+    <Project Path="src/Carotene.Union.SourceGenerator/Universe.Carotene.Union.SourceGenerator.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Collections.UnitTests/Collections.UnitTests.csproj" />
+    <Project Path="tests/Union.UnitTests/Union.UnitTests.csproj" />
   </Folder>
 </Solution>

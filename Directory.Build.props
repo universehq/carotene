@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/universehq/carotene</PackageProjectUrl>
     <RepositoryUrl>https://github.com/universehq/carotene</RepositoryUrl>
