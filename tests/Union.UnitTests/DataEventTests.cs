@@ -11,14 +11,12 @@ public class DataEventTests
     [Test]
     public void Test_DataEventCreate()
     {
-        DataEvent dataEvent = DataEvent.Data(
-            new()
-            {
-                Address = "123 Main St",
-                Age = 30,
-                Name = "John Doe",
-            }
-        );
+        DataEvent dataEvent = new Data()
+        {
+            Address = "123 Main St",
+            Age = 30,
+            Name = "John Doe",
+        };
         var result = dataEvent.Match(
             (in data) => $"It's {data.Name}",
             (in response) => "It's `Response`",

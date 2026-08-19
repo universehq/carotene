@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-
 using Universe.Carotene.Union.Attributes;
 
 namespace Union.UnitTests;

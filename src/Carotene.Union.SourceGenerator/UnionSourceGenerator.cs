@@ -194,62 +194,28 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
     )
     {
         var builder = new StringBuilder();
-        var hasStorage = HasStorage(members);
         Header(builder);
         OpenNamespace(builder, union);
         Line(builder, 1, Declaration(union) + " : global::Universe.Carotene.Union.IUnion");
         Line(builder, 1, "{");
 
-        if (hasStorage)
-        {
-            Line(builder, 2, "private readonly Storage _storage;");
-        }
-
-        // Use `Storage` only when the member is a struct
         foreach (var member in members)
         {
-            if (UsesStorage(member))
-            {
-                continue;
-            }
-
-            var ending = union.TypeKind == TypeKind.Class ? " = default!;" : ";";
-            Line(
-                builder,
-                2,
-                "private readonly " + TypeName(member) + " " + FieldName(member) + ending
-            );
+            var typeName =
+                member.TypeKind == TypeKind.Struct ? TypeName(member) : TypeName(member) + "?";
+            Line(builder, 2, "private readonly " + typeName + " " + FieldName(member) + ";");
         }
 
         Line(builder, 0, string.Empty);
 
-        var emittedStorageConstructor = false;
-        var maxSize = 1;
-
-        TypeSizeCalculator typeSizeCalculator = new(Unsafe.SizeOf<IntPtr>());
         foreach (var member in members)
         {
-            var size = typeSizeCalculator.GetApproximateTypeSize(member);
-
-            if (size > maxSize)
-            {
-                maxSize = size;
-            }
-
-            if (UsesStorage(member) && emittedStorageConstructor)
-            {
-                continue;
-            }
-
             Constructor(builder, union, members, member);
             Line(builder, 0, string.Empty);
-
-            emittedStorageConstructor |= UsesStorage(member);
         }
 
         foreach (var member in members)
         {
-            var value = UsesStorage(member) ? "Storage.Create(value)" : "value";
             Line(
                 builder,
                 2,
@@ -261,9 +227,7 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
                     + TypeName(member)
                     + " value) => new(Kind."
                     + Id(member.Name)
-                    + ", "
-                    + value
-                    + ");"
+                    + ", value);"
             );
         }
 
@@ -275,11 +239,11 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
         ResultMatch(builder, union, members);
         Line(builder, 0, string.Empty);
 
-        if (hasStorage)
-        {
-            GetValue(builder);
-            Line(builder, 0, string.Empty);
-        }
+        // if (hasStorage)
+        // {
+        //     GetValue(builder);
+        //     Line(builder, 0, string.Empty);
+        // }
 
         Implicit(builder, union, members);
         Line(builder, 0, string.Empty);
@@ -293,11 +257,11 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
 
         Line(builder, 2, "}");
 
-        if (hasStorage)
-        {
-            Line(builder, 0, string.Empty);
-            Storage(builder, maxSize);
-        }
+        // if (hasStorage)
+        // {
+        //     Line(builder, 0, string.Empty);
+        //     Storage(builder, maxSize);
+        // }
 
         Line(builder, 1, "}");
         CloseNamespace(builder, union);
@@ -311,25 +275,23 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
         INamedTypeSymbol activeMember
     )
     {
-        var storesValue = UsesStorage(activeMember);
-        var parameter = storesValue ? "Storage storage" : TypeName(activeMember) + " value";
+        var parameterType = TypeName(activeMember);
+        var parameter =
+            activeMember.TypeKind == TypeKind.Class
+                ? "global::System.String value".Equals(parameterType, StringComparison.Ordinal)
+                    ? parameterType + " value"
+                    : parameterType + " value"
+                : parameterType + " value";
 
-        Line(builder, 2, "private " + Id(union.Name) + "(Kind kind, " + parameter + ")");
+        Line(builder, 2, "private " + Id(union.Name) + "(Kind kind, in " + parameter + ")");
         Line(builder, 2, "{");
-        Line(builder, 3, "Tag = kind;");
 
-        if (HasStorage(members))
-        {
-            Line(builder, 3, "_storage = " + (storesValue ? "storage" : "default") + ";");
-        }
+        Line(builder, 3, "Tag = kind;");
 
         foreach (var member in members)
         {
-            if (UsesStorage(member))
-            {
-                continue;
-            }
-
+            // For class unions, only the active field needs to be assigned.
+            // Unassigned reference fields are initialized to null automatically.
             if (
                 union.TypeKind == TypeKind.Class
                 && !SymbolEqualityComparer.Default.Equals(member, activeMember)
@@ -340,7 +302,8 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
 
             var value = SymbolEqualityComparer.Default.Equals(member, activeMember)
                 ? "value"
-                : "default!";
+                : "default";
+
             Line(builder, 3, FieldName(member) + " = " + value + ";");
         }
 
@@ -460,9 +423,9 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
         if (member.TypeKind == TypeKind.Struct)
         {
             argument =
-                UsesStorage(member) ? "in Get<" + TypeName(member) + ">()"
-                : member.TypeKind == TypeKind.Struct ? "in " + FieldName(member)
-                : FieldName(member) + "!";
+                member.TypeKind == TypeKind.Struct
+                    ? "in " + FieldName(member)
+                    : FieldName(member) + "!";
         }
         else
         {
@@ -473,13 +436,8 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
         return handler + "(" + argument + ")";
     }
 
-    private static bool UsesStorage(INamedTypeSymbol member) =>
+    private static bool IsValueType(INamedTypeSymbol member) =>
         member.TypeKind == TypeKind.Struct && member.IsValueType;
-
-    private static bool HasStorage(IReadOnlyList<INamedTypeSymbol> members)
-    {
-        return members.Any(UsesStorage);
-    }
 
     private static void GetValue(StringBuilder builder)
     {
