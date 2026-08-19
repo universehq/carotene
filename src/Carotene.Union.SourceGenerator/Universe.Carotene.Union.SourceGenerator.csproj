@@ -2,10 +2,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsRoslynComponent>true</IsRoslynComponent>
   </PropertyGroup>
 
   <PropertyGroup>
+    <IsPackable>true</IsPackable>
     <PackageId>Universe.Carotene.Union.SourceGenerator</PackageId>
-    <VersionPrefix>0.0.1-alpha.1.0</VersionPrefix>
+    <VersionPrefix>0.0.1-alpha.1.2</VersionPrefix>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

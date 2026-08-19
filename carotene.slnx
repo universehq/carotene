@@ -11,6 +11,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Collections.UnitTests/Collections.UnitTests.csproj" />
+    <Project Path="tests/Playground.Tests/Playground.Tests.csproj" />
     <Project Path="tests/Union.UnitTests/Union.UnitTests.csproj" />
   </Folder>
 </Solution>

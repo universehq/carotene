@@ -2,12 +2,21 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <IncludeBuildOutput>true</IncludeBuildOutput>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
+    <IsPackable>true</IsPackable>
     <PackageId>Universe.Carotene.Union</PackageId>
-    <VersionPrefix>0.0.1-alpha.1.0</VersionPrefix>
+    <VersionPrefix>0.0.1-alpha.1.2</VersionPrefix>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="..\Carotene.Union.SourceGenerator\Universe.Carotene.Union.SourceGenerator.csproj"
+      PrivateAssets="all"
+    />
+  </ItemGroup>
 
   <ItemGroup>
     <None
