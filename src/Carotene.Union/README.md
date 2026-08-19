@@ -3,7 +3,7 @@
 ```csharp
 [Union<Data>]
 [Union<Response>]
-public readonly struct DataEvent { }
+public readonly partial struct DataEvent { }
 
 public readonly struct Data { }
 public readonly struct Response { }
