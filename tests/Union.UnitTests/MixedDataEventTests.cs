@@ -14,12 +14,14 @@ public class MixedDataEventTests
         var largeResult = large.Match(
             (in _) => "small",
             (in value) => value.Fourth.ToString(),
-            (_) => "instrument"
+            (_) => "instrument",
+            eventStatus: (_) => "status"
         );
         var instrumentResult = instrument.Match(
             (in _) => "small",
             (in _) => "large",
-            (value) => value.Symbol
+            (value) => value.Symbol,
+            eventStatus: (_) => "status"
         );
 
         Assert.Multiple(() =>
@@ -37,7 +39,8 @@ public class MixedDataEventTests
 [Union<SmallPayload>]
 [Union<LargePayload>]
 [Union<Instrument>]
-public readonly partial struct MixedDataEvent;
+[Union<EventStatus>]
+public readonly partial struct MixedDataEvent { }
 
 public readonly struct SmallPayload(int value)
 {
@@ -56,3 +59,16 @@ public sealed class Instrument(string symbol)
 {
     public string Symbol { get; } = symbol;
 }
+
+public sealed class EventStatus
+{
+    public StatusKind Status { get; set; }
+
+    public enum StatusKind
+    {
+        Pending,
+        Completed,
+        Failed
+    }    
+}
+

@@ -169,7 +169,7 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
             && !symbol.IsStatic
             && symbol.TypeParameters.Length == 0
             && !symbol.IsAbstract
-            && (symbol.TypeKind == TypeKind.Class || symbol.TypeKind == TypeKind.Struct);
+            && (symbol.TypeKind == TypeKind.Class || IsValueType(symbol));
     }
 
     private static bool IsPartial(INamedTypeSymbol symbol)
@@ -239,12 +239,6 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
         ResultMatch(builder, union, members);
         Line(builder, 0, string.Empty);
 
-        // if (hasStorage)
-        // {
-        //     GetValue(builder);
-        //     Line(builder, 0, string.Empty);
-        // }
-
         Implicit(builder, union, members);
         Line(builder, 0, string.Empty);
         Line(builder, 2, "public enum Kind");
@@ -256,13 +250,6 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
         }
 
         Line(builder, 2, "}");
-
-        // if (hasStorage)
-        // {
-        //     Line(builder, 0, string.Empty);
-        //     Storage(builder, maxSize);
-        // }
-
         Line(builder, 1, "}");
         CloseNamespace(builder, union);
         return builder.ToString();
@@ -343,6 +330,11 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
             members.Select(member => VoidDelegate(member) + " " + ParameterName(member))
         );
 
+        Line(
+            builder,
+            2,
+            "[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]"
+        );
         Line(builder, 2, "public void Match(" + arguments + ")");
         Line(builder, 2, "{");
         Line(builder, 3, "switch (Tag)");
@@ -384,6 +376,11 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
             members.Select(member => ResultDelegate(member) + " " + ParameterName(member))
         );
 
+        Line(
+            builder,
+            2,
+            "[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]"
+        );
         Line(builder, 2, "public TResult Match<TResult>(" + arguments + ")");
         Line(builder, 2, "{");
         Line(builder, 3, "return Tag switch");
@@ -420,92 +417,38 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
     {
         string argument;
 
-        if (member.TypeKind == TypeKind.Struct)
+        if (IsValueType(member))
         {
-            argument =
-                member.TypeKind == TypeKind.Struct
-                    ? "in " + FieldName(member)
-                    : FieldName(member) + "!";
+            argument = "in " + FieldName(member);
         }
         else
         {
-            argument =
-                member.TypeKind == TypeKind.Class ? FieldName(member) + "!" : FieldName(member);
+            argument = FieldName(member) + "!";
         }
 
         return handler + "(" + argument + ")";
     }
 
-    private static bool IsValueType(INamedTypeSymbol member) =>
+    private static bool IsValueType(in INamedTypeSymbol member) =>
         member.TypeKind == TypeKind.Struct && member.IsValueType;
-
-    private static void GetValue(StringBuilder builder)
-    {
-        Line(
-            builder,
-            2,
-            "[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]"
-        );
-        Line(
-            builder,
-            2,
-            "private ref readonly T Get<T>() where T : struct => ref global::System.Runtime.CompilerServices.Unsafe.As<Storage, T>(ref global::System.Runtime.CompilerServices.Unsafe.AsRef(in _storage));"
-        );
-    }
-
-    private static void Storage(StringBuilder builder, int size)
-    {
-        Line(
-            builder,
-            2,
-            "[global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Size = "
-                + size
-                + ")]"
-        );
-        Line(builder, 2, "private readonly struct Storage");
-        Line(builder, 2, "{");
-        Line(builder, 3, "public static Storage Create<T>(T value) where T : struct");
-        Line(builder, 3, "{");
-        Line(builder, 4, "Storage storage = default;");
-        Line(
-            builder,
-            4,
-            "global::System.Runtime.CompilerServices.Unsafe.As<Storage, T>(ref storage) = value;"
-        );
-        Line(builder, 4, "return storage;");
-        Line(builder, 3, "}");
-        Line(builder, 2, "}");
-    }
-
-    // private static string GenerateMember(INamedTypeSymbol union, INamedTypeSymbol member)
-    // {
-    //     var builder = new StringBuilder();
-    //     Header(builder);
-    //     OpenNamespace(builder, member);
-    //     Line(builder, 0, Declaration(member) + " : " + TypeName(union) + "." + MarkerName(union));
-    //     Line(builder, 0, "{");
-    //     Line(builder, 0, "}");
-    //     CloseNamespace(builder, member);
-    //     return builder.ToString();
-    // }
 
     private static string VoidDelegate(INamedTypeSymbol member)
     {
-        return member.TypeKind == TypeKind.Struct
+        return IsValueType(member)
             ? "global::Universe.Carotene.Union.MatchFunc<" + TypeName(member) + ">"
             : "global::System.Action<" + TypeName(member) + ">";
     }
 
     private static string ResultDelegate(INamedTypeSymbol member)
     {
-        return member.TypeKind == TypeKind.Struct
+        return IsValueType(member)
             ? "global::Universe.Carotene.Union.MatchFunc<" + TypeName(member) + ", TResult>"
             : "global::System.Func<" + TypeName(member) + ", TResult>";
     }
 
     private static string Declaration(INamedTypeSymbol symbol)
     {
-        if (symbol.TypeKind == TypeKind.Struct)
+        if (IsValueType(symbol))
         {
             return HasModifier(symbol, SyntaxKind.ReadOnlyKeyword)
                 ? "readonly partial struct " + Id(symbol.Name)

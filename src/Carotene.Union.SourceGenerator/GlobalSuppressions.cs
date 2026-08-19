@@ -12,3 +12,10 @@ using System.Diagnostics.CodeAnalysis;
     Scope = "member",
     Target = "~M:Universe.Carotene.Union.SourceGenerator.UnionSourceGenerator.Invocation(Microsoft.CodeAnalysis.INamedTypeSymbol,System.String)~System.String"
 )]
+[assembly: SuppressMessage(
+    "Style",
+    "IDE0046:Convert to conditional expression",
+    Justification = "<Pending>",
+    Scope = "member",
+    Target = "~M:Universe.Carotene.Union.SourceGenerator.UnionSourceGenerator.Declaration(Microsoft.CodeAnalysis.INamedTypeSymbol)~System.String"
+)]
