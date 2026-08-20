@@ -3,6 +3,15 @@ using Universe.Carotene.Union;
 
 namespace Union.UnitTests;
 
+public class UnionTests
+{
+    [Test]
+    public void TestSizeOfUnionStruct()
+    {
+        Assert.That(Unsafe.SizeOf<TestUnion>(), Is.EqualTo(24));
+    }
+}
+
 #pragma warning disable IDE0049,IDE0001
 public readonly partial struct TestUnion
 {
@@ -10,6 +19,7 @@ public readonly partial struct TestUnion
     private readonly global::Union.UnitTests.B _b;
     private readonly global::Union.UnitTests.C _c;
     private readonly global::System.String? _string;
+    private readonly global::Union.UnitTests.Contract? _contract;
 
     private TestUnion(Kind kind, in global::Union.UnitTests.A value)
     {
@@ -17,6 +27,7 @@ public readonly partial struct TestUnion
         _b = default;
         _c = default;
         _string = default;
+        _contract = default;
         Tag = kind;
     }
 
@@ -26,6 +37,7 @@ public readonly partial struct TestUnion
         _b = value;
         _c = default;
         _string = default;
+        _contract = default;
         Tag = kind;
     }
 
@@ -35,6 +47,7 @@ public readonly partial struct TestUnion
         _b = default;
         _c = value;
         _string = default;
+        _contract = default;
         Tag = kind;
     }
 
@@ -44,6 +57,17 @@ public readonly partial struct TestUnion
         _b = default;
         _c = default;
         _string = value;
+        _contract = default;
+        Tag = kind;
+    }
+
+    private TestUnion(Kind kind, global::Union.UnitTests.Contract value)
+    {
+        _a = default;
+        _b = default;
+        _c = default;
+        _string = default;
+        _contract = value;
         Tag = kind;
     }
 
@@ -54,6 +78,9 @@ public readonly partial struct TestUnion
     public static TestUnion @C(global::Union.UnitTests.C value) => new(Kind.C, value);
 
     public static TestUnion @String(global::System.String value) => new(Kind.String, value);
+
+    public static TestUnion @Contract(global::Union.UnitTests.Contract value) =>
+        new(Kind.String, value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Match(
@@ -103,4 +130,6 @@ public struct A { }
 public struct B { }
 
 public struct C { }
+
+public class Contract { }
 #pragma warning restore IDE0049,IDE0001

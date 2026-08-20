@@ -206,6 +206,7 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
             Line(builder, 2, "private readonly " + typeName + " " + FieldName(member) + ";");
         }
 
+        Line(builder, 2, "public Kind Tag { get; }");
         Line(builder, 0, string.Empty);
 
         foreach (var member in members)
@@ -231,8 +232,6 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
             );
         }
 
-        Line(builder, 0, string.Empty);
-        Line(builder, 2, "public Kind Tag { get; }");
         Line(builder, 0, string.Empty);
         VoidMatch(builder, union, members);
         Line(builder, 0, string.Empty);

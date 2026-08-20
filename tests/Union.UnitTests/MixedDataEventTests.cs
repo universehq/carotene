@@ -68,7 +68,6 @@ public sealed class EventStatus
     {
         Pending,
         Completed,
-        Failed
-    }    
+        Failed,
+    }
 }
-
