@@ -18,9 +18,9 @@ public class DataEventTests
             Name = "John Doe",
         };
         var result = dataEvent.Match(
-            (in data) => $"It's {data.Name}",
-            (in response) => "It's `Response`",
-            (in price) => ""
+            (data) => $"It's {data.Name}",
+            (response) => "It's `Response`",
+            (price) => ""
         );
 
         Assert.That(result, Is.EqualTo("It's John Doe"));
@@ -38,9 +38,9 @@ public class DataEventTests
             }
         );
         var result = dataEvent.Match(
-            (in data) => DataEvent.Data(data),
-            (in response) => DataEvent.Response(response),
-            (in price) => DataEvent.Price(price)
+            DataEvent.Data,
+            DataEvent.Response,
+            DataEvent.Price
         );
 
         Assert.That(result, Is.EqualTo(dataEvent));
@@ -53,7 +53,7 @@ public class DataEventTests
             () =>
             {
                 DataEvent dataEvent = new();
-                dataEvent.Match(data: (in _) => { }, response: (in _) => { }, price: (in _) => { });
+                dataEvent.Match(data: (_) => { }, response: (_) => { }, price: (_) => { });
             },
             message: "Cannot match an empty DataEvent."
         );

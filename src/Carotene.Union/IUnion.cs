@@ -1,3 +1,6 @@
 namespace Universe.Carotene.Union;
 
-public interface IUnion { }
+public interface IUnion
+{
+    object? Value { get; }
+}

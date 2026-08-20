@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -199,19 +198,14 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
         Line(builder, 1, Declaration(union) + " : global::Universe.Carotene.Union.IUnion");
         Line(builder, 1, "{");
 
-        foreach (var member in members)
-        {
-            var typeName =
-                member.TypeKind == TypeKind.Struct ? TypeName(member) : TypeName(member) + "?";
-            Line(builder, 2, "private readonly " + typeName + " " + FieldName(member) + ";");
-        }
-
+        Line(builder, 2, "private readonly global::System.Object? _value;");
         Line(builder, 2, "public Kind Tag { get; }");
+        Line(builder, 2, "public global::System.Object? Value => _value;");
         Line(builder, 0, string.Empty);
 
         foreach (var member in members)
         {
-            Constructor(builder, union, members, member);
+            Constructor(builder, union, member);
             Line(builder, 0, string.Empty);
         }
 
@@ -257,41 +251,21 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
     private static void Constructor(
         StringBuilder builder,
         INamedTypeSymbol union,
-        IReadOnlyList<INamedTypeSymbol> members,
         INamedTypeSymbol activeMember
     )
     {
         var parameterType = TypeName(activeMember);
+
         var parameter =
-            activeMember.TypeKind == TypeKind.Class
-                ? "global::System.String value".Equals(parameterType, StringComparison.Ordinal)
-                    ? parameterType + " value"
-                    : parameterType + " value"
+            activeMember.TypeKind == TypeKind.Struct || activeMember.TypeKind == TypeKind.Enum
+                ? "in " + parameterType + " value"
                 : parameterType + " value";
 
-        Line(builder, 2, "private " + Id(union.Name) + "(Kind kind, in " + parameter + ")");
+        Line(builder, 2, "private " + Id(union.Name) + "(Kind kind, " + parameter + ")");
         Line(builder, 2, "{");
 
+        Line(builder, 3, "_value = value;");
         Line(builder, 3, "Tag = kind;");
-
-        foreach (var member in members)
-        {
-            // For class unions, only the active field needs to be assigned.
-            // Unassigned reference fields are initialized to null automatically.
-            if (
-                union.TypeKind == TypeKind.Class
-                && !SymbolEqualityComparer.Default.Equals(member, activeMember)
-            )
-            {
-                continue;
-            }
-
-            var value = SymbolEqualityComparer.Default.Equals(member, activeMember)
-                ? "value"
-                : "default";
-
-            Line(builder, 3, FieldName(member) + " = " + value + ";");
-        }
 
         Line(builder, 2, "}");
     }
@@ -414,17 +388,7 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
 
     private static string Invocation(INamedTypeSymbol member, string handler)
     {
-        string argument;
-
-        if (IsValueType(member))
-        {
-            argument = "in " + FieldName(member);
-        }
-        else
-        {
-            argument = FieldName(member) + "!";
-        }
-
+        string argument = "(" + TypeName(member) + ")" + "_value!";
         return handler + "(" + argument + ")";
     }
 
@@ -433,16 +397,12 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
 
     private static string VoidDelegate(INamedTypeSymbol member)
     {
-        return IsValueType(member)
-            ? "global::Universe.Carotene.Union.MatchFunc<" + TypeName(member) + ">"
-            : "global::System.Action<" + TypeName(member) + ">";
+        return "global::System.Action<" + TypeName(member) + ">";
     }
 
     private static string ResultDelegate(INamedTypeSymbol member)
     {
-        return IsValueType(member)
-            ? "global::Universe.Carotene.Union.MatchFunc<" + TypeName(member) + ", TResult>"
-            : "global::System.Func<" + TypeName(member) + ", TResult>";
+        return "global::System.Func<" + TypeName(member) + ", TResult>";
     }
 
     private static string Declaration(INamedTypeSymbol symbol)
@@ -477,11 +437,6 @@ public sealed class UnionSourceGenerator : IIncrementalGenerator
     private static string TypeName(ITypeSymbol symbol)
     {
         return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-    }
-
-    private static string FieldName(INamedTypeSymbol symbol)
-    {
-        return "_" + char.ToLowerInvariant(symbol.Name[0]) + symbol.Name.Substring(1);
     }
 
     private static string ParameterName(INamedTypeSymbol symbol)

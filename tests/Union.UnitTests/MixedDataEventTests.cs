@@ -12,14 +12,14 @@ public class MixedDataEventTests
         var instrument = MixedDataEvent.Instrument(new Instrument("BTC-USDT"));
 
         var largeResult = large.Match(
-            (in _) => "small",
-            (in value) => value.Fourth.ToString(),
+            (_) => "small",
+            (value) => value.Fourth.ToString(),
             (_) => "instrument",
             eventStatus: (_) => "status"
         );
         var instrumentResult = instrument.Match(
-            (in _) => "small",
-            (in _) => "large",
+            (_) => "small",
+            (_) => "large",
             (value) => value.Symbol,
             eventStatus: (_) => "status"
         );

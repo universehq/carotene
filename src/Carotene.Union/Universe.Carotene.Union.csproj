@@ -8,7 +8,7 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Universe.Carotene.Union</PackageId>
-    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionPrefix>0.1.1</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>

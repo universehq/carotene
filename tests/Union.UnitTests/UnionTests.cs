@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Universe.Carotene.Union;
 
 namespace Union.UnitTests;
 
@@ -12,62 +11,42 @@ public class UnionTests
     }
 }
 
-#pragma warning disable IDE0049,IDE0001
-public readonly partial struct TestUnion
+#pragma warning disable IDE0049
+#pragma warning disable IDE0001
+#pragma warning disable IDE0032
+public readonly partial struct TestUnion : Universe.Carotene.Union.IUnion
 {
-    private readonly global::Union.UnitTests.A _a;
-    private readonly global::Union.UnitTests.B _b;
-    private readonly global::Union.UnitTests.C _c;
-    private readonly global::System.String? _string;
-    private readonly global::Union.UnitTests.Contract? _contract;
+    public Kind Tag { get; }
+    private readonly global::System.Object? _value;
+    public global::System.Object? Value => _value;
 
     private TestUnion(Kind kind, in global::Union.UnitTests.A value)
     {
-        _a = value;
-        _b = default;
-        _c = default;
-        _string = default;
-        _contract = default;
+        _value = value;
         Tag = kind;
     }
 
     private TestUnion(Kind kind, in global::Union.UnitTests.B value)
     {
-        _a = default;
-        _b = value;
-        _c = default;
-        _string = default;
-        _contract = default;
+        _value = value;
         Tag = kind;
     }
 
     private TestUnion(Kind kind, in global::Union.UnitTests.C value)
     {
-        _a = default;
-        _b = default;
-        _c = value;
-        _string = default;
-        _contract = default;
+        _value = value;
         Tag = kind;
     }
 
     private TestUnion(Kind kind, global::System.String value)
     {
-        _a = default;
-        _b = default;
-        _c = default;
-        _string = value;
-        _contract = default;
+        _value = value;
         Tag = kind;
     }
 
     private TestUnion(Kind kind, global::Union.UnitTests.Contract value)
     {
-        _a = default;
-        _b = default;
-        _c = default;
-        _string = default;
-        _contract = value;
+        _value = value;
         Tag = kind;
     }
 
@@ -84,9 +63,9 @@ public readonly partial struct TestUnion
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Match(
-        MatchFunc<global::Union.UnitTests.A> @a,
-        MatchFunc<global::Union.UnitTests.B> @b,
-        MatchFunc<global::Union.UnitTests.C> @c,
+        Action<global::Union.UnitTests.A> @a,
+        Action<global::Union.UnitTests.B> @b,
+        Action<global::Union.UnitTests.C> @c,
         Action<global::System.String> @string
     )
     {
@@ -96,24 +75,22 @@ public readonly partial struct TestUnion
                 throw new InvalidOperationException();
 
             case Kind.A:
-                @a(in _a);
+                @a((A)_value!);
                 break;
 
             case Kind.B:
-                @b(in _b);
+                @b((B)_value!);
                 break;
 
             case Kind.C:
-                @c(in _c);
+                @c((C)_value!);
                 break;
 
             case Kind.String:
-                @string(_string!);
+                @string((global::System.String)_value!);
                 break;
         }
     }
-
-    public Kind Tag { get; }
 
     public enum Kind
     {
@@ -132,4 +109,6 @@ public struct B { }
 public struct C { }
 
 public class Contract { }
-#pragma warning restore IDE0049,IDE0001
+#pragma warning restore IDE0049
+#pragma warning restore IDE0001
+#pragma warning restore IDE0032
