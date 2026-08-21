@@ -10,8 +10,8 @@ public readonly struct Response { }
 
 DataEvent dataEvent = new Data { };
 var result = dataEvent.Match(
-    (in response) => "It's `Response`",
-    (in data) => "It's `Data`"
+    data => data with { },
+    response => response with { }
 );
 ```
 

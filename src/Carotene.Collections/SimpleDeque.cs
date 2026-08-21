@@ -26,7 +26,9 @@ public sealed class SimpleDeque<T>(int capacity)
     public bool PushBack(T value)
     {
         if (IsFull)
+        {
             return false;
+        }
 
         _buffer[Wrap(_head + Count)] = value;
         Count++;
@@ -37,11 +39,15 @@ public sealed class SimpleDeque<T>(int capacity)
     public bool PushFront(T value)
     {
         if (IsFull)
+        {
             return false;
+        }
 
         _head--;
         if (_head < 0)
+        {
             _head += _buffer.Length;
+        }
 
         _buffer[_head] = value;
         Count++;

@@ -37,11 +37,7 @@ public class DataEventTests
                 Name = "John Doe",
             }
         );
-        var result = dataEvent.Match(
-            DataEvent.Data,
-            DataEvent.Response,
-            DataEvent.Price
-        );
+        var result = dataEvent.Match(DataEvent.Data, DataEvent.Response, DataEvent.Price);
 
         Assert.That(result, Is.EqualTo(dataEvent));
     }
